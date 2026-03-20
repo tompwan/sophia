@@ -180,7 +180,7 @@ function initRecognition(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR)return null;
   const r=new SR();
-  r.lang='it-IT';r.interimResults=true;r.maxAlternatives=1;r.continuous=false;
+  r.lang='it-IT';r.interimResults=true;r.maxAlternatives=1;r.continuous=true;
   r.onstart=()=>{
     isRecording=true;micBtn.classList.add('recording');micBtn.textContent='⏹️';
     showInfo('🎙️ Ti sto ascoltando… parla in italiano!','listening');
