@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Sofia – Italian Conversation Companion</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:system-ui,sans-serif;background:#fdf6ff;display:flex;flex-direction:column;height:100dvh}
+  header{background:linear-gradient(135deg,#a855f7,#ec4899);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .avatar{width:44px;height:44px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:3px solid rgba(255,255,255,0.6)}
+  .hinfo h1{color:white;font-size:17px;font-weight:700}
+  .hinfo p{color:rgba(255,255,255,0.85);font-size:12px}
+  .flag{font-size:18px;margin-left:auto}
+  #chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch}
+  .bwrap{display:flex;align-items:flex-end;gap:8px}
+  .bwrap.user{flex-direction:row-reverse}
+  .bubble{max-width:78%;padding:11px 15px;border-radius:20px;font-size:15px;line-height:1.5}
+  .bubble.sofia{background:white;color:#1a1a2e;border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.15)}
+  .bubble.user{background:linear-gradient(135deg,#a855f7,#ec4899);color:white;border-bottom-right-radius:4px}
+  .bubble.coaching{background:#fffbeb;border:1px solid #fbbf24;color:#78350f;border-radius:14px;font-size:14px;max-width:88%;align-self:center;padding:10px 14px}
+  .clabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#f59e0b;margin-bottom:3px}
+  .mavatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#ec4899);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+  .spkbtn{background:none;border:none;cursor:pointer;font-size:15px;opacity:0.55;padding:2px 4px;align-self:flex-end;-webkit-tap-highlight-color:transparent}
+  .spkbtn:active{opacity:1}
+  .typing{display:flex;align-items:center;gap:5px;padding:11px 15px;background:white;border-radius:20px;border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.15);width:fit-content}
+  .dot{width:7px;height:7px;border-radius:50%;background:#a855f7;animation:bounce 1.2s infinite}
+  .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,80%,100%{transform:scale(0.7);opacity:.5}40%{transform:scale(1);opacity:1}}
+  footer{padding:10px 14px 14px;background:white;border-top:1px solid rgba(168,85,247,0.15);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+  #info-bar{display:none;border-radius:10px;padding:8px 13px;font-size:13px;line-height:1.4}
+  #info-bar.hint{background:#f0fdf4;border:1px solid #86efac;color:#166534}
+  #info-bar.listening{background:#fdf4ff;border:1px solid #e879f9;color:#86198f;text-align:center}
+  #info-bar.error{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b}
+  .irow{display:flex;gap:8px;align-items:flex-end}
+  #msg{flex:1;border:1.5px solid rgba(168,85,247,0.3);border-radius:22px;padding:10px 15px;font-size:15px;outline:none;resize:none;max-height:90px;font-family:inherit;background:#fdf6ff;color:#1a1a2e;-webkit-appearance:none}
+  #msg:focus{border-color:#a855f7}
+  #msg::placeholder{color:#c084fc}
+  .btn-action{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:19px;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+  .btn-action:active{transform:scale(0.93)}
+  #sendBtn{background:linear-gradient(135deg,#a855f7,#ec4899);color:white}
+  #micBtn{background:white;border:1.5px solid rgba(168,85,247,0.4)!important;font-size:20px}
+  #micBtn.recording{background:#fdf4ff;border-color:#ec4899!important;animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(236,72,153,.4)}50%{box-shadow:0 0 0 8px rgba(236,72,153,0)}}
+  .btnrow{display:flex;gap:8px;align-items:center}
+  #hintBtn{background:none;border:1px solid #86efac;border-radius:14px;padding:5px 13px;font-size:12px;color:#166534;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  #hintBtn:active{background:#f0fdf4}
+  .sub{font-size:11px;color:#c084fc}
+  ::-webkit-scrollbar{width:3px}
+  ::-webkit-scrollbar-thumb{background:rgba(168,85,247,.3);border-radius:2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="avatar">🌸</div>
+  <div class="hinfo"><h1>Sofia</h1><p>La tua compagna di conversazione italiana</p></div>
+  <div class="flag">🇮🇹</div>
+</header>
+<div id="chat"></div>
+<footer>
+  <div id="info-bar"></div>
+  <div class="irow">
+    <textarea id="msg" rows="1" placeholder="Scrivi in italiano…"></textarea>
+    <button class="btn-action" id="micBtn" title="Parla">🎙️</button>
+    <button class="btn-action" id="sendBtn">➤</button>
+  </div>
+  <div class="btnrow">
+    <button id="hintBtn">💡 Ho bisogno di un aiuto</button>
+    <span class="sub">suggerimento in inglese</span>
+  </div>
+</footer>
+
+<script>
+// API calls go through /api/chat (Netlify function) — no key needed here
+
+const chatEl=document.getElementById('chat'),msgBox=document.getElementById('msg'),
+  infoBar=document.getElementById('info-bar'),hintBtn=document.getElementById('hintBtn'),
+  sendBtn=document.getElementById('sendBtn'),micBtn=document.getElementById('micBtn');
+
+const SYSTEM=`You are Sofia, a warm, curious, and encouraging Italian conversation partner helping an English speaker practise everyday Italian.
+RULES:
+1. ALWAYS reply in Italian only.
+2. Keep it natural and friendly — like a real Italian friend. Ask follow-up questions.
+3. If the user writes in English, gently encourage Italian: "Dai, prova in italiano! Ce la fai!" Never scold.
+4. Occasionally (not every time) correct mistakes with: 🌟 COACHING: [correction in Italian, kind and simple] on its own paragraph.
+5. Topics: weather, food, weekend plans, hobbies, travel.
+6. Replies: 2-5 sentences. Beginner/intermediate level Italian.
+7. Never mention you are an AI.`;
+
+let history=[],hintVisible=false,isRecording=false,recognition=null,itVoice=null;
+
+const synth=window.speechSynthesis||null;
+function loadVoices(){
+  if(!synth)return;
+  const vv=synth.getVoices();
+  itVoice=vv.find(v=>v.lang.startsWith('it')&&v.localService)||vv.find(v=>v.lang.startsWith('it'))||vv.find(v=>v.lang.startsWith('en'));
+}
+if(synth){loadVoices();synth.onvoiceschanged=loadVoices;}
+
+function speak(text){
+  if(!synth)return;
+  synth.cancel();
+  const clean=text.replace(/🌟 COACHING:[\s\S]*/,'').replace(/[🌸💡✨🎙️➤]/g,'').trim();
+  const u=new SpeechSynthesisUtterance(clean);
+  loadVoices();
+  if(itVoice)u.voice=itVoice;
+  u.lang='it-IT';u.rate=0.92;u.pitch=1.05;
+  synth.speak(u);
+}
+
+function showInfo(msg,type='hint'){
+  infoBar.textContent=msg;
+  infoBar.className=type;
+  infoBar.style.display='block';
+}
+function hideInfo(){infoBar.style.display='none';}
+function scrollBottom(){chatEl.scrollTop=chatEl.scrollHeight;}
+
+function addBubble(text,role,isCoaching=false,autoSpeak=false){
+  if(isCoaching){
+    const w=document.createElement('div');w.className='bubble coaching';
+    const l=document.createElement('div');l.className='clabel';l.textContent='✨ Un piccolo consiglio';
+    w.appendChild(l);
+    const p=document.createElement('p');p.textContent=text;w.appendChild(p);
+    chatEl.appendChild(w);scrollBottom();return;
+  }
+  const wrap=document.createElement('div');wrap.className='bwrap '+(role==='user'?'user':'sofia');
+  if(role==='assistant'){
+    const av=document.createElement('div');av.className='mavatar';av.textContent='🌸';wrap.appendChild(av);
+  }
+  const b=document.createElement('div');b.className='bubble '+(role==='user'?'user':'sofia');b.textContent=text;wrap.appendChild(b);
+  if(role==='assistant'){
+    const sb=document.createElement('button');sb.className='spkbtn';sb.title='Ascolta';sb.textContent='🔊';
+    sb.onclick=()=>speak(text);wrap.appendChild(sb);
+  }
+  chatEl.appendChild(wrap);scrollBottom();
+  if(autoSpeak&&role==='assistant')setTimeout(()=>speak(text),350);
+}
+
+function showTyping(){
+  const w=document.createElement('div');w.className='bwrap sofia';w.id='typing';
+  const av=document.createElement('div');av.className='mavatar';av.textContent='🌸';w.appendChild(av);
+  const t=document.createElement('div');t.className='typing';
+  t.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  w.appendChild(t);chatEl.appendChild(w);scrollBottom();
+}
+function removeTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+
+async function callSofia(userText,autoSpeak=false){
+  history.push({role:'user',content:userText});
+  showTyping();sendBtn.disabled=true;micBtn.disabled=true;
+  try{
+    const res=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:SYSTEM,messages:history})
+    });
+    const data=await res.json();
+    const full=data.content.map(b=>b.text||'').join('');
+    history.push({role:'assistant',content:full});
+    removeTyping();
+    const cm=full.match(/🌟 COACHING:([\s\S]+?)(?:\n\n|$)/);
+    const mainText=cm?full.replace(/🌟 COACHING:[\s\S]+/,'').trim():full;
+    addBubble(mainText,'assistant',false,autoSpeak);
+    if(cm)setTimeout(()=>addBubble(cm[1].trim(),'assistant',true),500);
+  }catch(e){
+    removeTyping();addBubble('Ops! Qualcosa è andato storto. Riprova!','assistant');
+  }
+  sendBtn.disabled=false;micBtn.disabled=false;
+}
+
+async function send(){
+  const text=msgBox.value.trim();if(!text)return;
+  msgBox.value='';msgBox.style.height='auto';hideInfo();
+  addBubble(text,'user');await callSofia(text,false);
+}
+
+function initRecognition(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return null;
+  const r=new SR();
+  r.lang='it-IT';r.interimResults=true;r.maxAlternatives=1;r.continuous=false;
+  r.onstart=()=>{
+    isRecording=true;micBtn.classList.add('recording');micBtn.textContent='⏹️';
+    showInfo('🎙️ Ti sto ascoltando… parla in italiano!','listening');
+  };
+  r.onresult=e=>{
+    let interim='',final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    msgBox.value=final||interim;
+  };
+  r.onend=()=>{
+    isRecording=false;micBtn.classList.remove('recording');micBtn.textContent='🎙️';hideInfo();
+    const text=msgBox.value.trim();
+    if(text){msgBox.value='';addBubble(text,'user');callSofia(text,true);}
+  };
+  r.onerror=e=>{
+    isRecording=false;micBtn.classList.remove('recording');micBtn.textContent='🎙️';
+    if(e.error==='not-allowed')showInfo('Accesso al microfono negato. Controlla le impostazioni del browser.','error');
+    else if(e.error!=='no-speech')showInfo('Errore microfono: '+e.error,'error');
+    else hideInfo();
+  };
+  return r;
+}
+
+micBtn.addEventListener('click',async()=>{
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showInfo('Il riconoscimento vocale non è supportato. Prova Chrome su Android.','error');return;}
+  if(isRecording){recognition.stop();return;}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    stream.getTracks().forEach(t=>t.stop());
+    recognition=initRecognition();
+    if(recognition)recognition.start();
+  }catch(e){
+    showInfo('Accesso al microfono negato. Controlla le impostazioni di Chrome.','error');
+  }
+});
+
+sendBtn.addEventListener('click',send);
+msgBox.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+msgBox.addEventListener('input',()=>{msgBox.style.height='auto';msgBox.style.height=msgBox.scrollHeight+'px';});
+
+hintBtn.addEventListener('click',async()=>{
+  if(hintVisible){hideInfo();hintVisible=false;return;}
+  hintBtn.disabled=true;showInfo('Sto pensando…','hint');
+  const last=history.filter(m=>m.role==='assistant').slice(-1)[0];
+  const prompt=last
+    ?`Sofia just said in Italian: "${last.content}". Give a SHORT English hint (1-2 sentences) for the learner on how to reply in Italian — include a simple example phrase. Be encouraging.`
+    :`Give a SHORT English hint (1-2 sentences) on how to start a conversation in Italian with Sofia. Include a simple example phrase.`;
+  try{
+    const res=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    showInfo('💡 '+(data.content[0]?.text||'Try replying in Italian — even a short phrase is great!'),'hint');
+    hintVisible=true;
+  }catch{showInfo('💡 Try replying in Italian — even a short phrase is great!','hint');hintVisible=true;}
+  hintBtn.disabled=false;
+});
+
+callSofia("Ciao! È la prima volta che parli con me — presentati e dimmi come stai oggi!",true);
+</script>
+</body>
+</html>
