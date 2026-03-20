@@ -26,16 +26,23 @@ exports.handler = async (event) => {
     }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve({
-        statusCode: 200,
-        headers: { 'Content-Type': 'application/json' },
-        body: data
-      }));
+      res.on('end', () => {
+        console.log('Anthropic status:', res.statusCode);
+        console.log('Anthropic response:', data);
+        resolve({
+          statusCode: 200,
+          headers: { 'Content-Type': 'application/json' },
+          body: data
+        });
+      });
     });
-    req.on('error', (e) => resolve({
-      statusCode: 500,
-      body: JSON.stringify({ error: e.message })
-    }));
+    req.on('error', (e) => {
+      console.log('Request error:', e.message);
+      resolve({
+        statusCode: 500,
+        body: JSON.stringify({ error: e.message })
+      });
+    });
     req.write(payload);
     req.end();
   });
