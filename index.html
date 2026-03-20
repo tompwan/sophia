@@ -196,7 +196,7 @@ function initRecognition(){
   };
   r.onend=()=>{
     if(isRecording){
-      try{r.start();}catch(e){}
+      setTimeout(()=>{try{r.start();}catch(e){}},150);
       return;
     }
     micBtn.classList.remove('recording');micBtn.textContent='🎙️';hideInfo();
