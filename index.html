@@ -191,14 +191,20 @@ function initRecognition(){
       if(e.results[i].isFinal)final+=e.results[i][0].transcript;
       else interim+=e.results[i][0].transcript;
     }
-    msgBox.value=final||interim;
+    if(final) msgBox.value=(msgBox.value+' '+final).trim();
+    else if(!msgBox.value) msgBox.value=interim;
   };
   r.onend=()=>{
-    isRecording=false;micBtn.classList.remove('recording');micBtn.textContent='🎙️';hideInfo();
+    if(isRecording){
+      try{r.start();}catch(e){}
+      return;
+    }
+    micBtn.classList.remove('recording');micBtn.textContent='🎙️';hideInfo();
     const text=msgBox.value.trim();
     if(text){msgBox.value='';addBubble(text,'user');callSofia(text,true);}
   };
   r.onerror=e=>{
+    if(e.error==='no-speech'&&isRecording){return;}
     isRecording=false;micBtn.classList.remove('recording');micBtn.textContent='🎙️';
     if(e.error==='not-allowed')showInfo('Accesso al microfono negato. Controlla le impostazioni del browser.','error');
     else if(e.error!=='no-speech')showInfo('Errore microfono: '+e.error,'error');
@@ -210,7 +216,7 @@ function initRecognition(){
 micBtn.addEventListener('click',async()=>{
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){showInfo('Il riconoscimento vocale non è supportato. Prova Chrome su Android.','error');return;}
-  if(isRecording){recognition.stop();return;}
+  if(isRecording){isRecording=false;recognition.stop();return;}
   try{
     const stream=await navigator.mediaDevices.getUserMedia({audio:true});
     stream.getTracks().forEach(t=>t.stop());
